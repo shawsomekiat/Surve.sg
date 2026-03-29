@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { surveys } from '../../data/surveys';
+import { useWallet } from '../../context/WalletContext';
 
 const MIN_REWARD_OPTIONS = [
   { label: 'Any amount', value: 0 },
@@ -20,6 +21,7 @@ const MAX_DURATION_OPTIONS = [
 
 export default function SurveyeeDashboard() {
   const navigate = useNavigate();
+  const { balance, surveysCompleted, completedSurveyIds, addAdEarning } = useWallet();
   const [minReward, setMinReward] = useState(0);
   const [maxDuration, setMaxDuration] = useState(Infinity);
   const [adModal, setAdModal] = useState<'idle' | 'watching' | 'done'>('idle');
@@ -41,6 +43,7 @@ export default function SurveyeeDashboard() {
       setAdProgress((elapsed / 30) * 100);
       if (elapsed >= 30) {
         clearInterval(interval);
+        addAdEarning();
         setAdModal('done');
       }
     }, 1000);
@@ -79,10 +82,10 @@ export default function SurveyeeDashboard() {
             <span style={{ fontSize: '13px', color: '#9ca3af', fontWeight: 500 }}>Balance</span>
           </div>
           <div style={{ fontSize: '36px', fontWeight: 800, letterSpacing: '-1px', marginBottom: '4px' }}>
-            S$11.10
+            S${balance.toFixed(2)}
           </div>
           <div style={{ fontSize: '14px', color: '#22c55e', fontWeight: 600, marginBottom: '20px' }}>
-            ☕ 6 kopis!
+            ☕ {Math.floor(balance / 1.85)} kopis!
           </div>
           <div style={{ display: 'flex', gap: '12px', marginBottom: '20px' }}>
             <div style={{
@@ -90,14 +93,14 @@ export default function SurveyeeDashboard() {
               padding: '12px', textAlign: 'center',
             }}>
               <div style={{ fontSize: '11px', color: '#9ca3af', marginBottom: '4px' }}>Earned</div>
-              <div style={{ fontSize: '18px', fontWeight: 700 }}>S$11.10</div>
+              <div style={{ fontSize: '18px', fontWeight: 700 }}>S${balance.toFixed(2)}</div>
             </div>
             <div style={{
               flex: 1, background: 'rgba(255,255,255,0.08)', borderRadius: '10px',
               padding: '12px', textAlign: 'center',
             }}>
               <div style={{ fontSize: '11px', color: '#9ca3af', marginBottom: '4px' }}>Done</div>
-              <div style={{ fontSize: '18px', fontWeight: 700 }}>3</div>
+              <div style={{ fontSize: '18px', fontWeight: 700 }}>{surveysCompleted}</div>
             </div>
           </div>
           <button
@@ -189,19 +192,22 @@ export default function SurveyeeDashboard() {
 
         {/* Survey Cards */}
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-          {filteredSurveys.map((survey) => (
+          {filteredSurveys.map((survey) => {
+            const done = completedSurveyIds.includes(survey.id);
+            return (
             <div
               key={survey.id}
               style={{
                 background: '#fff', borderRadius: '14px',
                 padding: '16px', boxShadow: '0 1px 3px rgba(0,0,0,0.08)',
                 display: 'flex', flexDirection: 'column', gap: '8px',
+                opacity: done ? 0.7 : 1,
               }}
             >
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '6px' }}>
                 <span style={{ fontWeight: 700, fontSize: '13px', color: '#0d1117', lineHeight: '1.3' }}>{survey.title}</span>
-                <span style={{ fontSize: '12px', fontWeight: 700, color: '#22c55e', whiteSpace: 'nowrap', flexShrink: 0 }}>
-                  S${survey.rewardSGD.toFixed(2)}
+                <span style={{ fontSize: '12px', fontWeight: 700, color: done ? '#9ca3af' : '#22c55e', whiteSpace: 'nowrap', flexShrink: 0 }}>
+                  {done ? '✓ Done' : `S${survey.rewardSGD.toFixed(2)}`}
                 </span>
               </div>
               <p style={{ fontSize: '11px', color: '#6b7280', lineHeight: '1.4' }}>{survey.description}</p>
@@ -217,17 +223,21 @@ export default function SurveyeeDashboard() {
                 <span>👥 {survey.targetResponses - survey.currentResponses} spots</span>
               </div>
               <button
-                onClick={() => navigate(`/surveyee/survey/${survey.id}`)}
+                onClick={() => !done && navigate(`/surveyee/survey/${survey.id}`)}
+                disabled={done}
                 style={{
-                  background: '#0d1117', color: '#fff', border: 'none',
-                  borderRadius: '8px', padding: '10px', fontSize: '12px',
-                  fontWeight: 600, cursor: 'pointer', width: '100%', marginTop: '4px',
+                  background: done ? '#f3f4f6' : '#0d1117',
+                  color: done ? '#9ca3af' : '#fff',
+                  border: 'none', borderRadius: '8px', padding: '10px', fontSize: '12px',
+                  fontWeight: 600, cursor: done ? 'default' : 'pointer',
+                  width: '100%', marginTop: '4px',
                 }}
               >
-                Start Survey ›
+                {done ? 'Completed ✓' : 'Start Survey ›'}
               </button>
             </div>
-          ))}
+            );
+          })}
         </div>
 
         {filteredSurveys.length === 0 && (

@@ -1,10 +1,12 @@
 import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { surveys } from '../../data/surveys';
+import { useWallet } from '../../context/WalletContext';
 
 export default function SurveyFlow() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { addSurveyEarning } = useWallet();
   const survey = surveys.find((s) => s.id === id);
 
   const [currentStep, setCurrentStep] = useState(0);
@@ -41,6 +43,7 @@ export default function SurveyFlow() {
 
   const handleNext = () => {
     if (isLast) {
+      addSurveyEarning(survey.id, survey.title, survey.rewardSGD);
       setShowComplete(true);
     } else {
       setCurrentStep((s) => s + 1);

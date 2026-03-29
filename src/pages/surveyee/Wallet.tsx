@@ -1,23 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-
-interface Transaction {
-  id: string;
-  icon: string;
-  description: string;
-  amount: number;
-  date: string;
-}
-
-const transactions: Transaction[] = [
-  { id: '1', icon: '📋', description: 'Fitness & Health Habits', amount: 3.50, date: '3 Jan' },
-  { id: '2', icon: '📋', description: 'Hawker Centre Dining Survey', amount: 2.00, date: '4 Jan' },
-  { id: '3', icon: '📋', description: 'Morning Coffee Habits', amount: 1.80, date: '4 Jan' },
-  { id: '4', icon: '📺', description: 'Watch & Earn Ad', amount: 0.10, date: '4 Jan' },
-  { id: '5', icon: '📺', description: 'Watch & Earn Ad', amount: 0.10, date: '4 Jan' },
-  { id: '6', icon: '💸', description: 'Withdrawal - PayNow', amount: -8.00, date: '2 Jan' },
-  { id: '7', icon: '🎁', description: 'Sign-up Bonus', amount: 1.60, date: '1 Jan' },
-];
+import { useWallet } from '../../context/WalletContext';
 
 const WITHDRAW_METHODS = [
   { id: 'paynow', icon: '📱', label: 'PayNow', desc: 'Instant transfer' },
@@ -27,6 +10,7 @@ const WITHDRAW_METHODS = [
 
 export default function Wallet() {
   const navigate = useNavigate();
+  const { balance, totalEarned, surveysCompleted, transactions, withdraw } = useWallet();
   const [showWithdraw, setShowWithdraw] = useState(false);
   const [selectedMethod, setSelectedMethod] = useState('paynow');
   const [amount, setAmount] = useState('');
@@ -34,7 +18,9 @@ export default function Wallet() {
 
   const handleWithdraw = () => {
     const val = parseFloat(amount);
-    if (!amount || isNaN(val) || val < 5) return;
+    if (!amount || isNaN(val) || val < 5 || val > balance) return;
+    const method = WITHDRAW_METHODS.find((m) => m.id === selectedMethod)?.label ?? selectedMethod;
+    withdraw(val, method);
     setWithdrawDone(true);
   };
 
@@ -62,16 +48,20 @@ export default function Wallet() {
             <span style={{ fontSize: '28px' }}>📋</span>
             <span style={{ fontSize: '13px', color: '#9ca3af', fontWeight: 500 }}>Balance</span>
           </div>
-          <div style={{ fontSize: '36px', fontWeight: 800, letterSpacing: '-1px', marginBottom: '4px' }}>S$11.10</div>
-          <div style={{ fontSize: '14px', color: '#22c55e', fontWeight: 600, marginBottom: '20px' }}>☕ 6 kopis!</div>
+          <div style={{ fontSize: '36px', fontWeight: 800, letterSpacing: '-1px', marginBottom: '4px' }}>
+            S${balance.toFixed(2)}
+          </div>
+          <div style={{ fontSize: '14px', color: '#22c55e', fontWeight: 600, marginBottom: '20px' }}>
+            ☕ {Math.floor(balance / 1.85)} kopis!
+          </div>
           <div style={{ display: 'flex', gap: '12px', marginBottom: '20px' }}>
             <div style={{ flex: 1, background: 'rgba(255,255,255,0.08)', borderRadius: '10px', padding: '12px', textAlign: 'center' }}>
               <div style={{ fontSize: '11px', color: '#9ca3af', marginBottom: '4px' }}>Earned</div>
-              <div style={{ fontSize: '18px', fontWeight: 700 }}>S$11.10</div>
+              <div style={{ fontSize: '18px', fontWeight: 700 }}>S${totalEarned.toFixed(2)}</div>
             </div>
             <div style={{ flex: 1, background: 'rgba(255,255,255,0.08)', borderRadius: '10px', padding: '12px', textAlign: 'center' }}>
               <div style={{ fontSize: '11px', color: '#9ca3af', marginBottom: '4px' }}>Done</div>
-              <div style={{ fontSize: '18px', fontWeight: 700 }}>3</div>
+              <div style={{ fontSize: '18px', fontWeight: 700 }}>{surveysCompleted}</div>
             </div>
           </div>
           <button
@@ -88,36 +78,39 @@ export default function Wallet() {
         {/* Transaction History */}
         <div style={{ background: '#fff', borderRadius: '16px', padding: '20px', boxShadow: '0 1px 3px rgba(0,0,0,0.08)' }}>
           <h3 style={{ fontSize: '16px', fontWeight: 700, marginBottom: '16px' }}>Transaction History</h3>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '0' }}>
-            {transactions.map((tx, i) => (
-              <div
-                key={tx.id}
-                style={{
-                  display: 'flex', alignItems: 'center', gap: '12px',
-                  padding: '13px 0',
-                  borderBottom: i < transactions.length - 1 ? '1px solid #f3f4f6' : 'none',
-                }}
-              >
-                <div style={{
-                  width: '40px', height: '40px', borderRadius: '10px',
-                  background: '#f9fafb', display: 'flex', alignItems: 'center',
-                  justifyContent: 'center', fontSize: '18px', flexShrink: 0,
-                }}>
-                  {tx.icon}
+          {transactions.length === 0 ? (
+            <div style={{ textAlign: 'center', padding: '24px', color: '#9ca3af', fontSize: '13px' }}>
+              No transactions yet. Complete a survey to get started!
+            </div>
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column' }}>
+              {transactions.map((tx, i) => (
+                <div
+                  key={tx.id}
+                  style={{
+                    display: 'flex', alignItems: 'center', gap: '12px',
+                    padding: '13px 0',
+                    borderBottom: i < transactions.length - 1 ? '1px solid #f3f4f6' : 'none',
+                  }}
+                >
+                  <div style={{
+                    width: '40px', height: '40px', borderRadius: '10px',
+                    background: '#f9fafb', display: 'flex', alignItems: 'center',
+                    justifyContent: 'center', fontSize: '18px', flexShrink: 0,
+                  }}>
+                    {tx.icon}
+                  </div>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontSize: '13px', fontWeight: 600, color: '#0d1117', marginBottom: '2px' }}>{tx.description}</div>
+                    <div style={{ fontSize: '11px', color: '#9ca3af' }}>{tx.date}</div>
+                  </div>
+                  <div style={{ fontSize: '14px', fontWeight: 700, color: tx.amount > 0 ? '#22c55e' : '#ef4444' }}>
+                    {tx.amount > 0 ? '+' : ''}S${Math.abs(tx.amount).toFixed(2)}
+                  </div>
                 </div>
-                <div style={{ flex: 1 }}>
-                  <div style={{ fontSize: '13px', fontWeight: 600, color: '#0d1117', marginBottom: '2px' }}>{tx.description}</div>
-                  <div style={{ fontSize: '11px', color: '#9ca3af' }}>{tx.date}</div>
-                </div>
-                <div style={{
-                  fontSize: '14px', fontWeight: 700,
-                  color: tx.amount > 0 ? '#22c55e' : '#ef4444',
-                }}>
-                  {tx.amount > 0 ? '+' : ''}S${tx.amount.toFixed(2)}
-                </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
         </div>
       </div>
 
@@ -210,16 +203,14 @@ export default function Wallet() {
                         <div style={{ fontWeight: 600, fontSize: '14px' }}>{m.label}</div>
                         <div style={{ fontSize: '12px', color: '#9ca3af' }}>{m.desc}</div>
                       </div>
-                      {selectedMethod === m.id && (
-                        <span style={{ color: '#2d7a4f', fontWeight: 700 }}>✓</span>
-                      )}
+                      {selectedMethod === m.id && <span style={{ color: '#2d7a4f', fontWeight: 700 }}>✓</span>}
                     </div>
                   ))}
                 </div>
 
                 <div style={{ marginBottom: '20px' }}>
                   <label style={{ fontSize: '13px', fontWeight: 600, color: '#374151', display: 'block', marginBottom: '8px' }}>
-                    Amount (min S$5)
+                    Amount (min S$5, max S${balance.toFixed(2)})
                   </label>
                   <div style={{ position: 'relative' }}>
                     <span style={{
@@ -229,6 +220,7 @@ export default function Wallet() {
                     <input
                       type="number"
                       min="5"
+                      max={balance}
                       step="0.01"
                       value={amount}
                       onChange={(e) => setAmount(e.target.value)}
@@ -237,21 +229,25 @@ export default function Wallet() {
                         width: '100%', padding: '13px 14px 13px 36px',
                         borderRadius: '10px', border: '2px solid #e5e7eb',
                         fontSize: '15px', outline: 'none', fontFamily: 'Inter, sans-serif',
+                        boxSizing: 'border-box',
                       }}
                     />
                   </div>
                   {amount && parseFloat(amount) < 5 && (
                     <p style={{ fontSize: '12px', color: '#ef4444', marginTop: '4px' }}>Minimum withdrawal is S$5</p>
                   )}
+                  {amount && parseFloat(amount) > balance && (
+                    <p style={{ fontSize: '12px', color: '#ef4444', marginTop: '4px' }}>Amount exceeds your balance</p>
+                  )}
                 </div>
 
                 <button
                   onClick={handleWithdraw}
-                  disabled={!amount || isNaN(parseFloat(amount)) || parseFloat(amount) < 5}
+                  disabled={!amount || isNaN(parseFloat(amount)) || parseFloat(amount) < 5 || parseFloat(amount) > balance}
                   style={{
                     width: '100%', padding: '14px', borderRadius: '12px', border: 'none',
                     fontSize: '15px', fontWeight: 600, cursor: 'pointer',
-                    background: amount && parseFloat(amount) >= 5 ? '#2d7a4f' : '#d1d5db',
+                    background: amount && parseFloat(amount) >= 5 && parseFloat(amount) <= balance ? '#2d7a4f' : '#d1d5db',
                     color: '#fff',
                   }}
                 >

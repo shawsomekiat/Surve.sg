@@ -68,7 +68,7 @@ export default function Landing() {
             ))}
           </ul>
           <button
-            onClick={() => navigate('/surveyee/dashboard')}
+            onClick={() => navigate('/surveyee/login')}
             style={{
               background: '#2d7a4f', color: '#fff', border: 'none',
               borderRadius: '10px', padding: '14px 20px',
@@ -115,7 +115,7 @@ export default function Landing() {
             ))}
           </ul>
           <button
-            onClick={() => navigate('/surveyor/dashboard')}
+            onClick={() => navigate('/surveyor/login')}
             style={{
               background: '#0d1117', color: '#fff', border: 'none',
               borderRadius: '10px', padding: '14px 20px',
