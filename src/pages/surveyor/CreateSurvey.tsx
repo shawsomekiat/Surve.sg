@@ -25,7 +25,23 @@ export default function CreateSurvey() {
   const [targetResponses, setTargetResponses] = useState('');
   const [expiresOn, setExpiresOn] = useState('');
   const [audienceGeneral, setAudienceGeneral] = useState(true);
+  const [targeting, setTargeting] = useState({
+    ageMin: '',
+    ageMax: '',
+    genders: [] as string[],
+    employment: [] as string[],
+    requiresVerification: false,
+  });
   const [questions, setQuestions] = useState<QuestionDraft[]>([]);
+
+  const toggleItem = (field: 'genders' | 'employment', value: string) => {
+    setTargeting((t) => ({
+      ...t,
+      [field]: t[field].includes(value)
+        ? t[field].filter((v) => v !== value)
+        : [...t[field], value],
+    }));
+  };
 
   const addQuestion = () => {
     setQuestions((prev) => [
@@ -206,6 +222,141 @@ export default function CreateSurvey() {
                   General Population
                 </span>
               </div>
+            </div>
+          </div>
+
+          {/* ── Demographic Targeting Card ── */}
+          <div style={{ background: '#fff', borderRadius: '14px', padding: '28px', marginBottom: '20px', boxShadow: '0 1px 3px rgba(0,0,0,0.08)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '4px' }}>
+              <h2 style={{ fontSize: '16px', fontWeight: 700, color: '#0d1117', margin: 0 }}>Demographic Targeting</h2>
+              <span style={{ background: '#f0fdf4', color: '#2d7a4f', fontSize: '11px', fontWeight: 700, padding: '2px 8px', borderRadius: '20px' }}>
+                Optional
+              </span>
+            </div>
+            <p style={{ fontSize: '13px', color: '#9ca3af', marginBottom: '20px' }}>
+              Narrow your audience to get more relevant responses. Leave blank to target everyone.
+            </p>
+
+            {/* Age Range */}
+            <div style={{ marginBottom: '20px' }}>
+              <label style={labelStyle}>Age Range</label>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <input
+                  type="number"
+                  min="13" max="100"
+                  value={targeting.ageMin}
+                  onChange={(e) => setTargeting((t) => ({ ...t, ageMin: e.target.value }))}
+                  placeholder="Min age"
+                  style={{ ...inputStyle, flex: 1 }}
+                />
+                <span style={{ color: '#9ca3af', fontWeight: 600, fontSize: '14px' }}>—</span>
+                <input
+                  type="number"
+                  min="13" max="100"
+                  value={targeting.ageMax}
+                  onChange={(e) => setTargeting((t) => ({ ...t, ageMax: e.target.value }))}
+                  placeholder="Max age"
+                  style={{ ...inputStyle, flex: 1 }}
+                />
+              </div>
+            </div>
+
+            {/* Gender */}
+            <div style={{ marginBottom: '20px' }}>
+              <label style={labelStyle}>Gender <span style={{ color: '#9ca3af', fontWeight: 400 }}>(select all that apply, or leave blank for all)</span></label>
+              <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                {[
+                  { value: 'male', label: 'Male' },
+                  { value: 'female', label: 'Female' },
+                  { value: 'non-binary', label: 'Non-binary' },
+                ].map(({ value, label }) => {
+                  const selected = targeting.genders.includes(value);
+                  return (
+                    <button
+                      key={value}
+                      type="button"
+                      onClick={() => toggleItem('genders', value)}
+                      style={{
+                        padding: '8px 16px', borderRadius: '8px', cursor: 'pointer',
+                        fontSize: '13px', fontWeight: 600, border: '1.5px solid',
+                        borderColor: selected ? '#2d7a4f' : '#e5e7eb',
+                        background: selected ? '#f0fdf4' : '#fff',
+                        color: selected ? '#166534' : '#374151',
+                        transition: 'all 0.15s',
+                      }}
+                    >
+                      {selected ? '✓ ' : ''}{label}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Employment */}
+            <div style={{ marginBottom: '20px' }}>
+              <label style={labelStyle}>Employment Status <span style={{ color: '#9ca3af', fontWeight: 400 }}>(select all that apply)</span></label>
+              <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                {[
+                  { value: 'student', label: 'Student' },
+                  { value: 'full-time', label: 'Full-time' },
+                  { value: 'part-time', label: 'Part-time' },
+                  { value: 'self-employed', label: 'Self-employed' },
+                  { value: 'unemployed', label: 'Unemployed' },
+                  { value: 'retired', label: 'Retired' },
+                ].map(({ value, label }) => {
+                  const selected = targeting.employment.includes(value);
+                  return (
+                    <button
+                      key={value}
+                      type="button"
+                      onClick={() => toggleItem('employment', value)}
+                      style={{
+                        padding: '8px 16px', borderRadius: '8px', cursor: 'pointer',
+                        fontSize: '13px', fontWeight: 600, border: '1.5px solid',
+                        borderColor: selected ? '#2d7a4f' : '#e5e7eb',
+                        background: selected ? '#f0fdf4' : '#fff',
+                        color: selected ? '#166534' : '#374151',
+                        transition: 'all 0.15s',
+                      }}
+                    >
+                      {selected ? '✓ ' : ''}{label}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* SingPass Verified Only */}
+            <div
+              onClick={() => setTargeting((t) => ({ ...t, requiresVerification: !t.requiresVerification }))}
+              style={{
+                display: 'flex', alignItems: 'center', gap: '12px',
+                padding: '14px 16px', borderRadius: '10px', cursor: 'pointer',
+                border: targeting.requiresVerification ? '2px solid #2d7a4f' : '2px solid #e5e7eb',
+                background: targeting.requiresVerification ? '#f0fdf4' : '#f9fafb',
+                transition: 'all 0.15s',
+              }}
+            >
+              <div style={{
+                width: '20px', height: '20px', borderRadius: '5px', flexShrink: 0,
+                background: targeting.requiresVerification ? '#2d7a4f' : '#fff',
+                border: targeting.requiresVerification ? 'none' : '2px solid #d1d5db',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                color: '#fff', fontSize: '12px', fontWeight: 700,
+              }}>
+                {targeting.requiresVerification && '✓'}
+              </div>
+              <div>
+                <div style={{ fontSize: '14px', fontWeight: 600, color: targeting.requiresVerification ? '#166534' : '#374151' }}>
+                  Require SingPass Verification
+                </div>
+                <div style={{ fontSize: '12px', color: '#9ca3af', marginTop: '2px' }}>
+                  Only verified respondents can take this survey — higher data quality
+                </div>
+              </div>
+              <span style={{ marginLeft: 'auto', fontSize: '11px', fontWeight: 700, background: '#dcfce7', color: '#166534', padding: '2px 8px', borderRadius: '20px', flexShrink: 0 }}>
+                Premium
+              </span>
             </div>
           </div>
 
