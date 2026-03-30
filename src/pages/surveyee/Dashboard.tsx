@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { surveys } from '../../data/surveys';
 import type { Survey } from '../../data/surveys';
 import { useWallet } from '../../context/WalletContext';
+import { useAuth } from '../../context/AuthContext';
 
 // ── Urgency helpers ──────────────────────────────────────────────────────────
 
@@ -113,6 +114,7 @@ const MAX_DURATION_OPTIONS = [
 
 export default function SurveyeeDashboard() {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const { balance, surveysCompleted, completedSurveyIds, addAdEarning, addSurveyEarning } = useWallet();
 
   // Profile + verification from localStorage
@@ -205,7 +207,7 @@ export default function SurveyeeDashboard() {
               background: '#0d1117', display: 'flex', alignItems: 'center',
               justifyContent: 'center', color: '#fff', fontSize: '14px', fontWeight: 700,
             }}>
-              {profile.age ? (profile as { fullName?: string }).fullName?.[0]?.toUpperCase() ?? 'A' : 'A'}
+              {user?.name?.[0]?.toUpperCase() ?? 'A'}
             </div>
           </div>
         </div>
