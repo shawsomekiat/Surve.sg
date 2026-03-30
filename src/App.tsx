@@ -5,6 +5,7 @@ import SurveyFlow from './pages/surveyee/SurveyFlow'
 import Wallet from './pages/surveyee/Wallet'
 import SurveyeeLogin from './pages/surveyee/Login'
 import ProfileSetup from './pages/surveyee/ProfileSetup'
+import SurveysPage from './pages/surveyee/Surveys'
 import SurveyorDashboard from './pages/surveyor/Dashboard'
 import CreateSurvey from './pages/surveyor/CreateSurvey'
 import Hub from './pages/surveyor/Hub'
@@ -20,6 +21,7 @@ function App() {
       <Route path="/surveyee/survey/:id" element={<SurveyFlow />} />
       <Route path="/surveyee/wallet" element={<Wallet />} />
       <Route path="/surveyee/profile-setup" element={<ProfileSetup />} />
+      <Route path="/surveyee/surveys" element={<SurveysPage />} />
       <Route path="/surveyor/login" element={<SurveyorLogin />} />
       <Route path="/surveyor/dashboard" element={<SurveyorDashboard />} />
       <Route path="/surveyor/create" element={<CreateSurvey />} />
