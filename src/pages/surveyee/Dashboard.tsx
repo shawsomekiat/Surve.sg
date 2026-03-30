@@ -52,6 +52,45 @@ function checkEligibility(survey: Survey, profile: UserProfile, isVerified: bool
   return 'eligible';
 }
 
+// ── SG food equivalent motivator ─────────────────────────────────────────────
+
+const SG_FOODS = [
+  { name: 'cai fan',          plural: 'cai fan',           emoji: '🍱', price: 4.50 },
+  { name: 'nasi lemak',       plural: 'nasi lemak',        emoji: '🍛', price: 3.80 },
+  { name: 'ice kachang',      plural: 'ice kachang',       emoji: '🧊', price: 2.80 },
+  { name: 'kopi',             plural: 'kopis',             emoji: '☕', price: 1.70 },
+  { name: 'curry puff',       plural: 'curry puffs',       emoji: '🥟', price: 1.30 },
+  { name: 'plain roti prata', plural: 'plain roti pratas', emoji: '🫓', price: 1.00 },
+];
+
+function getFoodEquivalent(balance: number): string {
+  if (balance < 1.00) return '🏃 One more survey for your first kopi!';
+
+  let bestFood = SG_FOODS[0];
+  let bestCount = 0;
+  let bestCoverage = 0;
+
+  for (const food of SG_FOODS) {
+    const count = Math.floor(balance / food.price);
+    if (count < 1 || count > 6) continue;
+    const coverage = (count * food.price) / balance;
+    if (coverage > bestCoverage) {
+      bestCoverage = coverage;
+      bestFood = food;
+      bestCount = count;
+    }
+  }
+
+  if (bestCount === 0) {
+    // balance > 6 × cai fan ($27+), just divide by cai fan
+    bestCount = Math.floor(balance / 4.50);
+    bestFood = SG_FOODS[0];
+  }
+
+  const label = bestCount === 1 ? bestFood.name : bestFood.plural;
+  return `${bestFood.emoji} ${bestCount} ${label}!`;
+}
+
 // ── Filters ──────────────────────────────────────────────────────────────────
 
 const MIN_REWARD_OPTIONS = [
@@ -181,7 +220,7 @@ export default function SurveyeeDashboard() {
             S${balance.toFixed(2)}
           </div>
           <div style={{ fontSize: '14px', color: '#22c55e', fontWeight: 600, marginBottom: '20px' }}>
-            ☕ {Math.floor(balance / 1.85)} kopis!
+            {getFoodEquivalent(balance)}
           </div>
           <div style={{ display: 'flex', gap: '12px', marginBottom: '20px' }}>
             <div style={{ flex: 1, background: 'rgba(255,255,255,0.08)', borderRadius: '10px', padding: '12px', textAlign: 'center' }}>
