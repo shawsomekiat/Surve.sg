@@ -52,7 +52,10 @@ const INITIAL_STATE: WalletState = {
 export function WalletProvider({ children }: { children: ReactNode }) {
   const [state, setState] = useState<WalletState>(() => {
     const stored = localStorage.getItem('survesg_wallet');
-    return stored ? JSON.parse(stored) : INITIAL_STATE;
+    if (!stored) return INITIAL_STATE;
+    const parsed = JSON.parse(stored);
+    // Backfill fields added after initial release so old stored data doesn't crash
+    return { ...INITIAL_STATE, ...parsed, completedAt: parsed.completedAt ?? {} };
   });
 
   const save = (next: WalletState) => {
