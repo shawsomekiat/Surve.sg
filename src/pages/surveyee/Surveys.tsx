@@ -87,8 +87,11 @@ export default function SurveysPage() {
     });
 
   const recentlyCompleted = surveys.filter((s) => {
+    if (!completedSurveyIds.includes(s.id)) return false;
     const ts = completedAt[s.id];
-    return ts !== undefined && now - ts <= THIRTY_DAYS_MS;
+    // No timestamp = completed before tracking was added; treat as recent
+    if (ts === undefined) return true;
+    return now - ts <= THIRTY_DAYS_MS;
   });
 
   return (
@@ -214,7 +217,7 @@ export default function SurveysPage() {
             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
               {recentlyCompleted.map((survey) => {
                 const ts = completedAt[survey.id];
-                const daysAgo = Math.floor((now - ts) / (1000 * 60 * 60 * 24));
+                const daysAgo = ts !== undefined ? Math.floor((now - ts) / (1000 * 60 * 60 * 24)) : 0;
                 return (
                   <div key={survey.id} style={{
                     background: '#fff', borderRadius: '14px', padding: '14px 16px',
