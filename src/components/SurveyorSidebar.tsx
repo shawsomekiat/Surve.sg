@@ -9,6 +9,7 @@ export default function SurveyorSidebar({ companyName = 'Acne Tech' }: SurveyorS
 
   const navItems = [
     { label: 'Survey Management', path: '/surveyor/dashboard', icon: '📋' },
+    { label: 'Quality Review', path: '/surveyor/quality-review', icon: '🛡' },
     { label: 'Analytics', path: '/surveyor/analytics', icon: '📊' },
     { label: 'Hub', path: '/surveyor/hub', icon: '🤝' },
     { label: 'Settings', path: '/surveyor/settings', icon: '⚙️' },

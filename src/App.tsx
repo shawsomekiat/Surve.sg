@@ -9,6 +9,7 @@ import SurveyorDashboard from './pages/surveyor/Dashboard'
 import CreateSurvey from './pages/surveyor/CreateSurvey'
 import Hub from './pages/surveyor/Hub'
 import SurveyorLogin from './pages/surveyor/Login'
+import QualityReview from './pages/surveyor/QualityReview'
 
 function App() {
   return (
@@ -23,6 +24,7 @@ function App() {
       <Route path="/surveyor/dashboard" element={<SurveyorDashboard />} />
       <Route path="/surveyor/create" element={<CreateSurvey />} />
       <Route path="/surveyor/hub" element={<Hub />} />
+      <Route path="/surveyor/quality-review" element={<QualityReview />} />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   )

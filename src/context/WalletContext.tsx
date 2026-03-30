@@ -7,6 +7,8 @@ export interface Transaction {
   description: string;
   amount: number;
   date: string;
+  qualityScore?: number;
+  qualityLabel?: 'good' | 'suspicious' | 'bad';
 }
 
 interface WalletState {
@@ -23,7 +25,7 @@ interface WalletContextType {
   surveysCompleted: number;
   completedSurveyIds: string[];
   transactions: Transaction[];
-  addSurveyEarning: (surveyId: string, description: string, amount: number) => void;
+  addSurveyEarning: (surveyId: string, description: string, amount: number, qualityScore?: number, qualityLabel?: 'good' | 'suspicious' | 'bad') => void;
   addAdEarning: () => void;
   withdraw: (amount: number, method: string) => void;
 }
@@ -55,7 +57,7 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     localStorage.setItem('survesg_wallet', JSON.stringify(next));
   };
 
-  const addSurveyEarning = (surveyId: string, description: string, amount: number) => {
+  const addSurveyEarning = (surveyId: string, description: string, amount: number, qualityScore?: number, qualityLabel?: 'good' | 'suspicious' | 'bad') => {
     if (state.completedSurveyIds.includes(surveyId)) return;
     const tx: Transaction = {
       id: Date.now().toString(),
@@ -63,6 +65,8 @@ export function WalletProvider({ children }: { children: ReactNode }) {
       description,
       amount,
       date: todayStr(),
+      qualityScore,
+      qualityLabel,
     };
     save({
       ...state,

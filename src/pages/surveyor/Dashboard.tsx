@@ -152,20 +152,28 @@ export default function SurveyorDashboard() {
                         border: '1px solid #e5e7eb', borderRadius: '10px', zIndex: 100,
                         boxShadow: '0 4px 12px rgba(0,0,0,0.1)', overflow: 'hidden', minWidth: '120px',
                       }}>
-                        {['Edit', 'Pause', 'Delete'].map((action) => (
+                        {[
+                          { label: 'Test Survey', color: '#374151' },
+                          { label: 'Edit', color: '#374151' },
+                          { label: 'Pause', color: '#374151' },
+                          { label: 'Delete', color: '#ef4444' },
+                        ].map(({ label, color }) => (
                           <button
-                            key={action}
-                            onClick={() => setOpenDropdown(null)}
+                            key={label}
+                            onClick={() => {
+                              setOpenDropdown(null);
+                              if (label === 'Test Survey') navigate(`/surveyee/survey/${survey.id}`);
+                            }}
                             style={{
                               display: 'block', width: '100%', padding: '10px 16px',
                               background: 'none', border: 'none', textAlign: 'left',
                               fontSize: '13px', cursor: 'pointer', fontWeight: 500,
-                              color: action === 'Delete' ? '#ef4444' : '#374151',
+                              color,
                             }}
                             onMouseEnter={(e) => (e.currentTarget.style.background = '#f9fafb')}
                             onMouseLeave={(e) => (e.currentTarget.style.background = 'none')}
                           >
-                            {action}
+                            {label === 'Test Survey' ? '▶ Test Survey' : label}
                           </button>
                         ))}
                       </div>
