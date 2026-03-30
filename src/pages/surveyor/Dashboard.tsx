@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import SurveyorSidebar from '../../components/SurveyorSidebar';
 import { surveys as surveyData } from '../../data/surveys';
+import { loadResponses, exportCSV } from '../../utils/exportCSV';
 
 type TabType = 'all' | 'active' | 'draft' | 'paused';
 
@@ -154,6 +155,7 @@ export default function SurveyorDashboard() {
                       }}>
                         {[
                           { label: 'Test Survey', color: '#374151' },
+                          { label: 'Export Results', color: '#374151' },
                           { label: 'Edit', color: '#374151' },
                           { label: 'Pause', color: '#374151' },
                           { label: 'Delete', color: '#ef4444' },
@@ -163,6 +165,12 @@ export default function SurveyorDashboard() {
                             onClick={() => {
                               setOpenDropdown(null);
                               if (label === 'Test Survey') navigate(`/surveyee/survey/${survey.id}`);
+                              if (label === 'Export Results') {
+                                const full = surveyData.find((s) => s.id === survey.id);
+                                const questions = full?.questions ?? [];
+                                const responses = loadResponses(survey.id);
+                                exportCSV(survey.title, questions, responses);
+                              }
                             }}
                             style={{
                               display: 'block', width: '100%', padding: '10px 16px',
@@ -173,7 +181,7 @@ export default function SurveyorDashboard() {
                             onMouseEnter={(e) => (e.currentTarget.style.background = '#f9fafb')}
                             onMouseLeave={(e) => (e.currentTarget.style.background = 'none')}
                           >
-                            {label === 'Test Survey' ? '▶ Test Survey' : label}
+                            {label === 'Test Survey' ? '▶ Test Survey' : label === 'Export Results' ? '⬇ Export Results' : label}
                           </button>
                         ))}
                       </div>

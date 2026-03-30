@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { surveys } from '../../data/surveys';
 import { useWallet } from '../../context/WalletContext';
 import { extractFeatures, scoreResponse, scoreMeta } from '../../utils/qualityScorer';
+import { saveResponse } from '../../utils/exportCSV';
 
 export default function SurveyFlow() {
   const { id } = useParams<{ id: string }>();
@@ -62,6 +63,7 @@ export default function SurveyFlow() {
       const result = scoreResponse(features);
       setQualityScore(result.score);
       setQualityLabel(result.label);
+      saveResponse(survey.id, answers, result.score, result.label);
       addSurveyEarning(survey.id, survey.title, survey.rewardSGD, result.score, result.label);
       setShowComplete(true);
     } else {
