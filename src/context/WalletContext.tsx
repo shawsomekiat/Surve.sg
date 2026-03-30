@@ -16,6 +16,7 @@ interface WalletState {
   totalEarned: number;
   surveysCompleted: number;
   completedSurveyIds: string[];
+  completedAt: Record<string, number>; // surveyId → Unix timestamp ms
   transactions: Transaction[];
 }
 
@@ -24,6 +25,7 @@ interface WalletContextType {
   totalEarned: number;
   surveysCompleted: number;
   completedSurveyIds: string[];
+  completedAt: Record<string, number>;
   transactions: Transaction[];
   addSurveyEarning: (surveyId: string, description: string, amount: number, qualityScore?: number, qualityLabel?: 'good' | 'suspicious' | 'bad') => void;
   addAdEarning: () => void;
@@ -41,6 +43,7 @@ const INITIAL_STATE: WalletState = {
   totalEarned: 1.60,
   surveysCompleted: 0,
   completedSurveyIds: [],
+  completedAt: {},
   transactions: [
     { id: 'signup', icon: '🎁', description: 'Sign-up Bonus', amount: 1.60, date: '1 Jan' },
   ],
@@ -74,6 +77,7 @@ export function WalletProvider({ children }: { children: ReactNode }) {
       totalEarned: Math.round((state.totalEarned + amount) * 100) / 100,
       surveysCompleted: state.surveysCompleted + 1,
       completedSurveyIds: [...state.completedSurveyIds, surveyId],
+      completedAt: { ...state.completedAt, [surveyId]: Date.now() },
       transactions: [tx, ...state.transactions],
     });
   };
@@ -115,6 +119,7 @@ export function WalletProvider({ children }: { children: ReactNode }) {
       totalEarned: state.totalEarned,
       surveysCompleted: state.surveysCompleted,
       completedSurveyIds: state.completedSurveyIds,
+      completedAt: state.completedAt,
       transactions: state.transactions,
       addSurveyEarning,
       addAdEarning,

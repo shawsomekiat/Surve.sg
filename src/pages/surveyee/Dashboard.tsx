@@ -115,7 +115,7 @@ const MAX_DURATION_OPTIONS = [
 export default function SurveyeeDashboard() {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { balance, surveysCompleted, completedSurveyIds, addAdEarning, addSurveyEarning } = useWallet();
+  const { balance, surveysCompleted, completedSurveyIds, completedAt, addAdEarning, addSurveyEarning } = useWallet();
 
   // Profile + verification from localStorage
   const profile: UserProfile = (() => {
@@ -167,11 +167,15 @@ export default function SurveyeeDashboard() {
     }, 4000);
   };
 
-  // Build survey list — filter expired, apply reward/duration filters, sort by urgency
+  const THIRTY_DAYS_MS = 30 * 24 * 60 * 60 * 1000;
+  const now = Date.now();
+
+  // Build survey list — filter expired AND completed, apply filters, sort by urgency
   const visibleSurveys = surveys
     .filter((s) => {
+      if (completedSurveyIds.includes(s.id)) return false; // completed → own section
       const daysLeft = getDaysLeft(s.expiresAt);
-      if (daysLeft !== null && daysLeft <= 0) return false; // expired
+      if (daysLeft !== null && daysLeft <= 0) return false;
       if (s.rewardSGD < minReward) return false;
       if (s.durationMins > maxDuration) return false;
       return true;
@@ -179,8 +183,14 @@ export default function SurveyeeDashboard() {
     .sort((a, b) => {
       const da = getDaysLeft(a.expiresAt) ?? 999;
       const db = getDaysLeft(b.expiresAt) ?? 999;
-      return da - db; // most urgent first
+      return da - db;
     });
+
+  // Completed surveys within the last 30 days
+  const recentlyCompleted = surveys.filter((s) => {
+    const ts = completedAt[s.id];
+    return ts !== undefined && now - ts <= THIRTY_DAYS_MS;
+  });
 
   const hasFilters = minReward > 0 || maxDuration < Infinity;
 
@@ -413,6 +423,46 @@ export default function SurveyeeDashboard() {
             <div style={{ fontSize: '32px', marginBottom: '12px' }}>🔍</div>
             <div style={{ fontWeight: 600, marginBottom: '4px' }}>No surveys match your filters</div>
             <div style={{ fontSize: '13px' }}>Try adjusting your filter settings</div>
+          </div>
+        )}
+
+        {/* Completed section */}
+        {recentlyCompleted.length > 0 && (
+          <div style={{ marginTop: '32px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
+              <span style={{ fontWeight: 700, fontSize: '15px', color: '#0d1117' }}>✓ Completed</span>
+              <span style={{ fontSize: '11px', color: '#9ca3af' }}>Visible for 30 days</span>
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+              {recentlyCompleted.map((survey) => {
+                const ts = completedAt[survey.id];
+                const daysAgo = Math.floor((now - ts) / (1000 * 60 * 60 * 24));
+                return (
+                  <div key={survey.id} style={{
+                    background: '#fff', borderRadius: '14px', padding: '14px 16px',
+                    boxShadow: '0 1px 3px rgba(0,0,0,0.06)',
+                    display: 'flex', alignItems: 'center', gap: '14px',
+                  }}>
+                    <div style={{
+                      width: '40px', height: '40px', borderRadius: '10px',
+                      background: '#f0fdf4', display: 'flex', alignItems: 'center',
+                      justifyContent: 'center', fontSize: '18px', flexShrink: 0,
+                    }}>✓</div>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ fontWeight: 600, fontSize: '13px', color: '#0d1117', marginBottom: '2px' }}>{survey.title}</div>
+                      <div style={{ fontSize: '11px', color: '#9ca3af' }}>
+                        {daysAgo === 0 ? 'Completed today' : `Completed ${daysAgo} day${daysAgo > 1 ? 's' : ''} ago`}
+                        {' · '}S${survey.rewardSGD.toFixed(2)} earned
+                      </div>
+                    </div>
+                    <span style={{
+                      fontSize: '11px', fontWeight: 700, color: '#166534',
+                      background: '#dcfce7', padding: '3px 10px', borderRadius: '20px', flexShrink: 0,
+                    }}>Done</span>
+                  </div>
+                );
+              })}
+            </div>
           </div>
         )}
       </div>
