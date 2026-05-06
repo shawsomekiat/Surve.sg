@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import { getScopedStorageKey } from '../../utils/userStorage';
 
 type Mode = 'signin' | 'signup';
 type ContactMethod = 'email' | 'phone';
@@ -42,8 +43,19 @@ export default function SurveyeeLogin() {
     setError('');
     const err = validate();
     if (err) { setError(err); return; }
-    login('surveyee', form.username.trim(), contactValue.trim());
-    if (mode === 'signup') {
+
+    const nextUser = {
+      role: 'surveyee' as const,
+      name: form.username.trim(),
+      email: contactValue.trim(),
+    };
+
+    login(nextUser.role, nextUser.name, nextUser.email);
+
+    const profileKey = getScopedStorageKey('survesg_profile', nextUser);
+    const hasProfile = localStorage.getItem(profileKey) !== null;
+
+    if (mode === 'signup' || !hasProfile) {
       navigate('/surveyee/profile-setup');
     } else {
       navigate('/surveyee/dashboard');

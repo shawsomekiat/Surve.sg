@@ -1,8 +1,9 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useWallet } from '../../context/WalletContext';
 import { useAuth } from '../../context/AuthContext';
 import BottomNav from '../../components/BottomNav';
+import { getScopedStorageKey } from '../../utils/userStorage';
 
 // ── SG food equivalent motivator ─────────────────────────────────────────────
 
@@ -33,16 +34,19 @@ function getFoodEquivalent(balance: number): string {
 export default function SurveyeeDashboard() {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { balance, surveysCompleted, addAdEarning, addSurveyEarning } = useWallet();
+  const { balance, totalEarned, surveysCompleted, addAdEarning, addSurveyEarning } = useWallet();
+  const verificationKey = getScopedStorageKey('survesg_singpass_verified', user);
 
-  const [isVerified, setIsVerified] = useState(
-    localStorage.getItem('survesg_singpass_verified') === 'true'
-  );
+  const [isVerified, setIsVerified] = useState(localStorage.getItem(verificationKey) === 'true');
 
   const [adModal, setAdModal] = useState<'idle' | 'watching' | 'done'>('idle');
   const [adCountdown, setAdCountdown] = useState(30);
   const [adProgress, setAdProgress] = useState(0);
   const [singpassModal, setSingpassModal] = useState<'idle' | 'connecting' | 'verifying' | 'done'>('idle');
+
+  useEffect(() => {
+    setIsVerified(localStorage.getItem(verificationKey) === 'true');
+  }, [verificationKey]);
 
   const handleWatchAd = () => {
     setAdModal('watching');
@@ -66,7 +70,7 @@ export default function SurveyeeDashboard() {
     setTimeout(() => setSingpassModal('verifying'), 2000);
     setTimeout(() => {
       setSingpassModal('done');
-      localStorage.setItem('survesg_singpass_verified', 'true');
+      localStorage.setItem(verificationKey, 'true');
       setIsVerified(true);
       addSurveyEarning('__singpass_bonus__', 'SingPass Verification Bonus', 0.50);
     }, 4000);
@@ -108,7 +112,7 @@ export default function SurveyeeDashboard() {
           <div style={{ display: 'flex', gap: '12px', marginBottom: '20px' }}>
             <div style={{ flex: 1, background: 'rgba(255,255,255,0.08)', borderRadius: '10px', padding: '12px', textAlign: 'center' }}>
               <div style={{ fontSize: '11px', color: '#9ca3af', marginBottom: '4px' }}>Earned</div>
-              <div style={{ fontSize: '18px', fontWeight: 700 }}>S${balance.toFixed(2)}</div>
+              <div style={{ fontSize: '18px', fontWeight: 700 }}>S${totalEarned.toFixed(2)}</div>
             </div>
             <div style={{ flex: 1, background: 'rgba(255,255,255,0.08)', borderRadius: '10px', padding: '12px', textAlign: 'center' }}>
               <div style={{ fontSize: '11px', color: '#9ca3af', marginBottom: '4px' }}>Done</div>

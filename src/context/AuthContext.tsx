@@ -1,7 +1,7 @@
 import { createContext, useContext, useState } from 'react';
 import type { ReactNode } from 'react';
 
-interface User {
+export interface User {
   role: 'surveyor' | 'surveyee';
   name: string;
   email: string;

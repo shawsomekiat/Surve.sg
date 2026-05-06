@@ -3,7 +3,9 @@ import { useNavigate } from 'react-router-dom';
 import { surveys } from '../../data/surveys';
 import type { Survey } from '../../data/surveys';
 import { useWallet } from '../../context/WalletContext';
+import { useAuth } from '../../context/AuthContext';
 import BottomNav from '../../components/BottomNav';
+import { getScopedStorageKey } from '../../utils/userStorage';
 
 function getDaysLeft(expiresAt?: string): number | null {
   if (!expiresAt) return null;
@@ -55,13 +57,16 @@ const MAX_DURATION_OPTIONS = [
 
 export default function SurveysPage() {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const { completedSurveyIds, completedAt } = useWallet();
+  const profileKey = getScopedStorageKey('survesg_profile', user);
+  const verificationKey = getScopedStorageKey('survesg_singpass_verified', user);
 
   const profile: UserProfile = (() => {
-    try { return JSON.parse(localStorage.getItem('survesg_profile') || '{}'); }
+    try { return JSON.parse(localStorage.getItem(profileKey) || '{}'); }
     catch { return {}; }
   })();
-  const isVerified = localStorage.getItem('survesg_singpass_verified') === 'true';
+  const isVerified = localStorage.getItem(verificationKey) === 'true';
 
   const [minReward, setMinReward] = useState(0);
   const [maxDuration, setMaxDuration] = useState(Infinity);

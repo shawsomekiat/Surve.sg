@@ -3,24 +3,29 @@ import { useNavigate } from 'react-router-dom';
 import SurveyorSidebar from '../../components/SurveyorSidebar';
 import { surveys as surveyData } from '../../data/surveys';
 import { loadResponses, exportCSV } from '../../utils/exportCSV';
+import { shortDateDaysAgo } from '../../utils/surveyDates';
 
 type TabType = 'all' | 'active' | 'draft' | 'paused';
 
 const extraSurveys = [
-  { id: '8', title: 'Brand Awareness Study', status: 'active' as const, rewardSGD: 4.50, targetResponses: 300, currentResponses: 145, createdAt: '5 Jan' },
-  { id: '9', title: 'App UX Feedback', status: 'draft' as const, rewardSGD: 3.00, targetResponses: 200, currentResponses: 0, createdAt: '6 Jan' },
-  { id: '10', title: 'Local Food Preferences', status: 'paused' as const, rewardSGD: 2.50, targetResponses: 500, currentResponses: 210, createdAt: '6 Jan' },
-  { id: '11', title: 'Digital Wallet Usage', status: 'active' as const, rewardSGD: 3.80, targetResponses: 400, currentResponses: 88, createdAt: '7 Jan' },
-  { id: '12', title: 'Remote Work Survey', status: 'active' as const, rewardSGD: 5.00, targetResponses: 250, currentResponses: 30, createdAt: '7 Jan' },
-  { id: '13', title: 'Travel Intentions 2025', status: 'active' as const, rewardSGD: 4.20, targetResponses: 350, currentResponses: 60, createdAt: '8 Jan' },
-  { id: '14', title: 'Healthcare Access Survey', status: 'draft' as const, rewardSGD: 6.00, targetResponses: 300, currentResponses: 0, createdAt: '8 Jan' },
-  { id: '15', title: 'Climate Change Attitudes', status: 'active' as const, rewardSGD: 3.50, targetResponses: 400, currentResponses: 55, createdAt: '9 Jan' },
+  { id: '8', title: 'Brand Awareness Study', status: 'active' as const, rewardSGD: 4.50, targetResponses: 300, currentResponses: 145, createdAt: shortDateDaysAgo(4) },
+  { id: '9', title: 'App UX Feedback', status: 'draft' as const, rewardSGD: 3.00, targetResponses: 200, currentResponses: 0, createdAt: shortDateDaysAgo(3) },
+  { id: '10', title: 'Local Food Preferences', status: 'paused' as const, rewardSGD: 2.50, targetResponses: 500, currentResponses: 210, createdAt: shortDateDaysAgo(3) },
+  { id: '11', title: 'Digital Wallet Usage', status: 'active' as const, rewardSGD: 3.80, targetResponses: 400, currentResponses: 88, createdAt: shortDateDaysAgo(2) },
+  { id: '12', title: 'Remote Work Survey', status: 'active' as const, rewardSGD: 5.00, targetResponses: 250, currentResponses: 30, createdAt: shortDateDaysAgo(2) },
+  { id: '13', title: 'Travel Intentions 2026', status: 'active' as const, rewardSGD: 4.20, targetResponses: 350, currentResponses: 60, createdAt: shortDateDaysAgo(1) },
+  { id: '14', title: 'Healthcare Access Survey', status: 'draft' as const, rewardSGD: 6.00, targetResponses: 300, currentResponses: 0, createdAt: shortDateDaysAgo(1) },
+  { id: '15', title: 'Climate Change Attitudes', status: 'active' as const, rewardSGD: 3.50, targetResponses: 400, currentResponses: 55, createdAt: shortDateDaysAgo(0) },
 ];
 
 const allTableSurveys = [
   ...surveyData.map((s) => ({ id: s.id, title: s.title, status: s.status, rewardSGD: s.rewardSGD, targetResponses: s.targetResponses, currentResponses: s.currentResponses, createdAt: s.createdAt })),
   ...extraSurveys,
 ];
+
+const totalResponses = allTableSurveys.reduce((sum, survey) => sum + survey.currentResponses, 0);
+const activeSurveys = allTableSurveys.filter((survey) => survey.status === 'active').length;
+const completedSurveys = allTableSurveys.filter((survey) => survey.currentResponses >= survey.targetResponses).length;
 
 export default function SurveyorDashboard() {
   const navigate = useNavigate();
@@ -37,10 +42,10 @@ export default function SurveyorDashboard() {
   };
 
   const stats = [
-    { label: 'Total Surveys', value: 15, icon: '📋' },
-    { label: 'Active', value: 13, icon: '✅' },
-    { label: 'Responses', value: 4, icon: '📊' },
-    { label: 'Completed', value: 0, icon: '🏁' },
+    { label: 'Total Surveys', value: allTableSurveys.length, icon: '📋' },
+    { label: 'Active', value: activeSurveys, icon: '✅' },
+    { label: 'Responses', value: totalResponses, icon: '📊' },
+    { label: 'Completed', value: completedSurveys, icon: '🏁' },
   ];
 
   return (

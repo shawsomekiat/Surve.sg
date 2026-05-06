@@ -1,5 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext';
+import { getScopedStorageKey } from '../../utils/userStorage';
 
 const selectStyle: React.CSSProperties = {
   width: '100%',
@@ -38,15 +40,39 @@ const labelStyle: React.CSSProperties = {
   marginBottom: '8px',
 };
 
+interface ProfileForm {
+  fullName: string;
+  age: string;
+  gender: string;
+  education: string;
+  employment: string;
+  interests: string;
+}
+
+const EMPTY_FORM: ProfileForm = {
+  fullName: '',
+  age: '',
+  gender: '',
+  education: '',
+  employment: '',
+  interests: '',
+};
+
 export default function ProfileSetup() {
   const navigate = useNavigate();
-  const [form, setForm] = useState({
-    fullName: '',
-    age: '',
-    gender: '',
-    education: '',
-    employment: '',
-    interests: '',
+  const { user } = useAuth();
+  const profileKey = getScopedStorageKey('survesg_profile', user);
+  const [form, setForm] = useState<ProfileForm>(() => {
+    try {
+      const stored = localStorage.getItem(profileKey);
+      if (!stored) return EMPTY_FORM;
+      return {
+        ...EMPTY_FORM,
+        ...JSON.parse(stored),
+      };
+    } catch {
+      return EMPTY_FORM;
+    }
   });
   const [error, setError] = useState('');
 
@@ -65,7 +91,7 @@ export default function ProfileSetup() {
     if (!form.education) { setError('Please select your education level.'); return; }
     if (!form.employment) { setError('Please select your employment status.'); return; }
 
-    localStorage.setItem('survesg_profile', JSON.stringify(form));
+    localStorage.setItem(profileKey, JSON.stringify(form));
     navigate('/surveyee/dashboard');
   };
 

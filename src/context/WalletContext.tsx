@@ -1,5 +1,7 @@
-import { createContext, useContext, useState } from 'react';
+import { createContext, useContext, useEffect, useState } from 'react';
 import type { ReactNode } from 'react';
+import { useAuth } from './AuthContext';
+import { getScopedStorageKey } from '../utils/userStorage';
 
 export interface Transaction {
   id: string;
@@ -49,18 +51,30 @@ const INITIAL_STATE: WalletState = {
   ],
 };
 
-export function WalletProvider({ children }: { children: ReactNode }) {
-  const [state, setState] = useState<WalletState>(() => {
-    const stored = localStorage.getItem('survesg_wallet');
+function loadWalletState(storageKey: string) {
+  try {
+    const stored = localStorage.getItem(storageKey);
     if (!stored) return INITIAL_STATE;
+
     const parsed = JSON.parse(stored);
-    // Backfill fields added after initial release so old stored data doesn't crash
     return { ...INITIAL_STATE, ...parsed, completedAt: parsed.completedAt ?? {} };
-  });
+  } catch {
+    return INITIAL_STATE;
+  }
+}
+
+export function WalletProvider({ children }: { children: ReactNode }) {
+  const { user } = useAuth();
+  const storageKey = getScopedStorageKey('survesg_wallet', user);
+  const [state, setState] = useState<WalletState>(() => loadWalletState(storageKey));
+
+  useEffect(() => {
+    setState(loadWalletState(storageKey));
+  }, [storageKey]);
 
   const save = (next: WalletState) => {
     setState(next);
-    localStorage.setItem('survesg_wallet', JSON.stringify(next));
+    localStorage.setItem(storageKey, JSON.stringify(next));
   };
 
   const addSurveyEarning = (surveyId: string, description: string, amount: number, qualityScore?: number, qualityLabel?: 'good' | 'suspicious' | 'bad') => {

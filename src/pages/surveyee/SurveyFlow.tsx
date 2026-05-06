@@ -2,14 +2,18 @@ import { useState, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { surveys } from '../../data/surveys';
 import { useWallet } from '../../context/WalletContext';
+import { useAuth } from '../../context/AuthContext';
 import { extractFeatures, scoreResponse, scoreMeta } from '../../utils/qualityScorer';
 import { saveResponse } from '../../utils/exportCSV';
+import { getScopedStorageKey } from '../../utils/userStorage';
 
 export default function SurveyFlow() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { user } = useAuth();
   const { addSurveyEarning } = useWallet();
   const survey = surveys.find((s) => s.id === id);
+  const profileKey = getScopedStorageKey('survesg_profile', user);
 
   const startTime = useRef(Date.now());
   const answerChanges = useRef(0);
@@ -53,7 +57,7 @@ export default function SurveyFlow() {
       // Load profile for demographic check
       let userAge: number | undefined;
       try {
-        const p = JSON.parse(localStorage.getItem('survesg_profile') || '{}');
+        const p = JSON.parse(localStorage.getItem(profileKey) || '{}');
         if (p.age) userAge = parseInt(p.age);
       } catch { /* ignore */ }
 

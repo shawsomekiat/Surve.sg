@@ -1,3 +1,5 @@
+import { isoDaysFromNow, shortDateDaysAgo } from '../utils/surveyDates';
+
 export interface Question {
   id: string;
   type: 'multiple_choice' | 'text' | 'rating' | 'yes_no';
@@ -40,8 +42,8 @@ export const surveys: Survey[] = [
     currentResponses: 0,
     status: 'active',
     audienceTag: 'General Population',
-    createdAt: '3 Jan',
-    expiresAt: '2026-03-30',
+    createdAt: shortDateDaysAgo(4),
+    expiresAt: isoDaysFromNow(5),
     questions: [
       { id: 'q1', type: 'multiple_choice', text: 'How often do you exercise per week?', options: ['Never', '1-2 times', '3-4 times', '5+ times'] },
       { id: 'q2', type: 'multiple_choice', text: 'What type of exercise do you prefer?', options: ['Running', 'Gym', 'Sports', 'Yoga/Pilates', 'Swimming'] },
@@ -59,8 +61,8 @@ export const surveys: Survey[] = [
     currentResponses: 0,
     status: 'active',
     audienceTag: 'General Population',
-    createdAt: '4 Jan',
-    expiresAt: '2026-04-01',
+    createdAt: shortDateDaysAgo(3),
+    expiresAt: isoDaysFromNow(7),
     questions: [
       { id: 'q1', type: 'multiple_choice', text: 'How often do you visit hawker centres?', options: ['Daily', '2-3 times a week', 'Once a week', 'Rarely', 'Never'] },
       { id: 'q2', type: 'multiple_choice', text: 'What do you typically spend per meal?', options: ['Under S$5', 'S$5-S$10', 'S$10-S$15', 'Over S$15'] },
@@ -69,7 +71,7 @@ export const surveys: Survey[] = [
   },
   {
     id: '3',
-    title: 'Online Shopping Behavior 2024',
+    title: 'Online Shopping Behavior 2026',
     description: 'Understanding e-commerce trends in Singapore',
     rewardSGD: 5.50,
     durationMins: 12,
@@ -77,8 +79,8 @@ export const surveys: Survey[] = [
     currentResponses: 0,
     status: 'active',
     audienceTag: 'Age 18–40',
-    createdAt: '3 Jan',
-    expiresAt: '2026-04-05',
+    createdAt: shortDateDaysAgo(2),
+    expiresAt: isoDaysFromNow(10),
     targeting: {
       ageMin: 18,
       ageMax: 40,
@@ -102,8 +104,8 @@ export const surveys: Survey[] = [
     currentResponses: 0,
     status: 'active',
     audienceTag: 'General Population',
-    createdAt: '4 Jan',
-    expiresAt: '2026-03-29',
+    createdAt: shortDateDaysAgo(1),
+    expiresAt: isoDaysFromNow(4),
     questions: [
       { id: 'q1', type: 'multiple_choice', text: 'How many cups of coffee do you drink daily?', options: ['None', '1 cup', '2 cups', '3+ cups'] },
       { id: 'q2', type: 'multiple_choice', text: 'Where do you usually get your morning coffee?', options: ['Kopitiam', 'Starbucks/Coffee Bean', 'Home-brewed', 'Office pantry', 'Convenience store'] },
@@ -120,8 +122,8 @@ export const surveys: Survey[] = [
     currentResponses: 0,
     status: 'active',
     audienceTag: 'Verified Only',
-    createdAt: '4 Jan',
-    expiresAt: '2026-04-08',
+    createdAt: shortDateDaysAgo(5),
+    expiresAt: isoDaysFromNow(12),
     targeting: {
       requiresVerification: true,
     },
@@ -142,8 +144,8 @@ export const surveys: Survey[] = [
     currentResponses: 0,
     status: 'active',
     audienceTag: 'Age 21–45',
-    createdAt: '4 Jan',
-    expiresAt: '2026-04-02',
+    createdAt: shortDateDaysAgo(3),
+    expiresAt: isoDaysFromNow(8),
     targeting: {
       ageMin: 21,
       ageMax: 45,
@@ -156,19 +158,20 @@ export const surveys: Survey[] = [
   },
   {
     id: '7',
-    title: 'Beta test',
-    description: 'Just testing',
-    rewardSGD: 1.00,
+    title: 'Digital Payments & E-Wallet Pulse',
+    description: 'Tell us how you pay around Singapore',
+    rewardSGD: 2.80,
     durationMins: 5,
     targetResponses: 600,
     currentResponses: 0,
     status: 'active',
     audienceTag: 'General Population',
-    createdAt: '5 Jan',
-    expiresAt: '2026-03-31',
+    createdAt: shortDateDaysAgo(2),
+    expiresAt: isoDaysFromNow(14),
     questions: [
-      { id: 'q1', type: 'yes_no', text: 'Is this app easy to use?' },
-      { id: 'q2', type: 'rating', text: 'Overall experience rating (1-5)' },
+      { id: 'q1', type: 'multiple_choice', text: 'Which payment method do you use most often?', options: ['PayNow', 'Credit card', 'Debit card', 'Cash', 'Apple Pay / Google Pay'] },
+      { id: 'q2', type: 'multiple_choice', text: 'How often do you use an e-wallet each week?', options: ['Daily', 'A few times a week', 'Once a week', 'Rarely', 'Never'] },
+      { id: 'q3', type: 'rating', text: 'How convenient are digital payments in Singapore? (1-5)' },
     ],
   },
 ];

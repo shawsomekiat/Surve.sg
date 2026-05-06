@@ -4,16 +4,25 @@ import SurveyorSidebar from '../../components/SurveyorSidebar';
 import { trainingStats } from '../../data/trainingLabels';
 import { scoreMeta } from '../../utils/qualityScorer';
 import type { Transaction } from '../../context/WalletContext';
+import { listScopedStorageKeys } from '../../utils/userStorage';
 
-// Pull scored responses from wallet localStorage
+// Pull scored responses from every stored surveyee wallet
 function getScoredResponses(): (Transaction & { qualityScore: number; qualityLabel: 'good' | 'suspicious' | 'bad' })[] {
   try {
-    const wallet = JSON.parse(localStorage.getItem('survesg_wallet') || '{}');
-    const txs: Transaction[] = wallet.transactions ?? [];
-    return txs.filter(
-      (t): t is Transaction & { qualityScore: number; qualityLabel: 'good' | 'suspicious' | 'bad' } =>
-        t.icon === '📋' && t.qualityScore !== undefined,
-    );
+    const walletKeys = ['survesg_wallet', ...listScopedStorageKeys('survesg_wallet')];
+    const seen = new Set<string>();
+
+    return walletKeys.flatMap((key) => {
+      if (seen.has(key)) return [];
+      seen.add(key);
+
+      const wallet = JSON.parse(localStorage.getItem(key) || '{}');
+      const txs: Transaction[] = wallet.transactions ?? [];
+      return txs.filter(
+        (t): t is Transaction & { qualityScore: number; qualityLabel: 'good' | 'suspicious' | 'bad' } =>
+          t.icon === '📋' && t.qualityScore !== undefined,
+      );
+    });
   } catch {
     return [];
   }
@@ -24,10 +33,10 @@ const MOCK_RESPONSES = [
   { id: 'm1', description: 'Fitness & Health Habits', qualityScore: 91, qualityLabel: 'good' as const, date: '29 Mar', amount: 3.50 },
   { id: 'm2', description: 'Hawker Centre Dining Survey', qualityScore: 78, qualityLabel: 'good' as const, date: '29 Mar', amount: 2.00 },
   { id: 'm3', description: 'Morning Coffee Habits', qualityScore: 34, qualityLabel: 'bad' as const, date: '28 Mar', amount: 1.80 },
-  { id: 'm4', description: 'Online Shopping Behavior 2024', qualityScore: 55, qualityLabel: 'suspicious' as const, date: '28 Mar', amount: 5.50 },
+  { id: 'm4', description: 'Online Shopping Behavior 2026', qualityScore: 55, qualityLabel: 'suspicious' as const, date: '28 Mar', amount: 5.50 },
   { id: 'm5', description: 'Weekend Activities in SG', qualityScore: 88, qualityLabel: 'good' as const, date: '27 Mar', amount: 3.00 },
   { id: 'm6', description: 'Public Transport Experience', qualityScore: 22, qualityLabel: 'bad' as const, date: '27 Mar', amount: 4.00 },
-  { id: 'm7', description: 'Beta test', qualityScore: 63, qualityLabel: 'suspicious' as const, date: '26 Mar', amount: 1.00 },
+  { id: 'm7', description: 'Digital Payments & E-Wallet Pulse', qualityScore: 63, qualityLabel: 'suspicious' as const, date: '26 Mar', amount: 2.80 },
 ];
 
 type FilterType = 'all' | 'good' | 'suspicious' | 'bad';
